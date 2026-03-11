@@ -1,0 +1,1394 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScreenDaddy — Screen Time Tracking for macOS</title>
+    <link rel="icon" type="image/png" href="assets/screendaddy_menubar_icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --white: #ffffff;
+        --off-white: #f9f9f7;
+        --surface: #f2f2ef;
+        --surface-2: #e8e8e4;
+        --border: #ddddd8;
+        --border-strong: #c8c8c2;
+        --text-primary: #1a1a18;
+        --text-secondary: #5c5c56;
+        --text-muted: #9c9c94;
+        --accent: #1d6aff;
+        --accent-hover: #0052e0;
+        --accent-subtle: rgba(29, 106, 255, 0.08);
+        --accent-subtle-border: rgba(29, 106, 255, 0.18);
+        --green: #1a8a52;
+        --green-bg: rgba(26, 138, 82, 0.08);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 20px;
+        --radius-xl: 28px;
+        --font-serif: "Instrument Serif", Georgia, serif;
+        --font-sans: "DM Sans", -apple-system, sans-serif;
+        --font-mono: "DM Mono", "SF Mono", monospace;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.07), 0 1px 4px rgba(0, 0, 0, 0.05);
+        --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.09), 0 4px 12px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 32px 80px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.06);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background: var(--white);
+        color: var(--text-primary);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      /* ── NAV ── */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--text-primary);
+      }
+      .nav-logo {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .nav-logo img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+      }
+      .nav-logo-fallback {
+        font-size: 14px;
+      }
+      .nav-wordmark {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: -0.01em;
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        list-style: none;
+      }
+      .nav-links a {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .nav-links a:hover {
+        color: var(--text-primary);
+      }
+      .nav-cta {
+        background: var(--text-primary) !important;
+        color: var(--white) !important;
+        padding: 8px 18px;
+        border-radius: 40px;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        transition:
+          background 0.15s,
+          transform 0.1s !important;
+      }
+      .nav-cta:hover {
+        background: #333 !important;
+        transform: translateY(-1px);
+      }
+      @media (max-width: 680px) {
+        nav {
+          padding: 0 20px;
+        }
+        .nav-links {
+          display: none;
+        }
+      }
+
+      /* ── HERO ── */
+      .hero {
+        padding: 160px 40px 100px;
+        max-width: 1100px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+        align-items: center;
+      }
+      .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--green);
+        background: var(--green-bg);
+        border: 1px solid rgba(26, 138, 82, 0.18);
+        padding: 5px 12px;
+        border-radius: 40px;
+        margin-bottom: 24px;
+      }
+      .hero-eyebrow::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: breathe 2.5s ease-in-out infinite;
+      }
+      @keyframes breathe {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.4;
+          transform: scale(0.7);
+        }
+      }
+      .hero-headline {
+        font-family: var(--font-serif);
+        font-size: clamp(40px, 5vw, 58px);
+        font-weight: 400;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        margin-bottom: 22px;
+      }
+      .hero-headline em {
+        font-style: italic;
+        color: var(--text-secondary);
+      }
+      .hero-sub {
+        font-size: 17px;
+        font-weight: 300;
+        color: var(--text-secondary);
+        line-height: 1.65;
+        margin-bottom: 36px;
+        max-width: 440px;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .btn-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        background: var(--text-primary);
+        color: var(--white);
+        font-family: var(--font-sans);
+        font-size: 15px;
+        font-weight: 600;
+        padding: 14px 28px;
+        border-radius: 40px;
+        text-decoration: none;
+        transition:
+          background 0.15s,
+          transform 0.1s,
+          box-shadow 0.15s;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+        letter-spacing: -0.01em;
+      }
+      .btn-download:hover {
+        background: #2a2a28;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+      }
+      .btn-download svg {
+        flex-shrink: 0;
+      }
+      .btn-ghost {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 14px 20px;
+        border-radius: 40px;
+        border: 1px solid var(--border);
+        transition: all 0.15s;
+      }
+      .btn-ghost:hover {
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+        background: var(--surface);
+      }
+      .hero-meta {
+        margin-top: 28px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-size: 12px;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+      }
+      .hero-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .hero-visual {
+        position: relative;
+      }
+      .hero-screenshot-wrap {
+        position: relative;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        aspect-ratio: 16/11;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .hero-screenshot-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .hero-screenshot-placeholder {
+        width: 100%;
+        height: 280px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        color: var(--text-muted);
+        font-size: 13px;
+        font-family: var(--font-mono);
+      }
+      /* Floating badge on screenshot */
+      .hero-badge {
+        position: absolute;
+        bottom: -18px;
+        left: -18px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 200px;
+      }
+      .hero-badge-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--accent-subtle);
+        border: 1px solid var(--accent-subtle-border);
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .hero-badge-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+      .hero-badge-value {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 1px;
+        font-family: var(--font-mono);
+      }
+
+      @media (max-width: 860px) {
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 48px;
+          padding: 120px 24px 60px;
+        }
+        .hero-sub {
+          max-width: 100%;
+        }
+        .hero-badge {
+          display: none;
+        }
+      }
+
+      /* ── SECTION WRAPPERS ── */
+      section {
+        padding: 100px 40px;
+      }
+      @media (max-width: 680px) {
+        section {
+          padding: 64px 24px;
+        }
+      }
+      .section-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .section-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+      }
+      .section-headline {
+        font-family: var(--font-serif);
+        font-size: clamp(28px, 3.5vw, 42px);
+        font-weight: 400;
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        margin-bottom: 18px;
+      }
+      .section-sub {
+        font-size: 16px;
+        font-weight: 300;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        max-width: 560px;
+        margin-bottom: 56px;
+      }
+
+      /* ── HOW IT WORKS ── */
+      .how-section {
+        background: var(--off-white);
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2px;
+        background: var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      @media (max-width: 680px) {
+        .steps {
+          grid-template-columns: 1fr;
+        }
+      }
+      .step {
+        background: var(--white);
+        padding: 36px 32px;
+        position: relative;
+      }
+      .step-num {
+        font-family: var(--font-serif);
+        font-size: 56px;
+        font-weight: 400;
+        color: var(--surface-2);
+        line-height: 1;
+        margin-bottom: 20px;
+        letter-spacing: -0.03em;
+      }
+      .step-icon {
+        width: 44px;
+        height: 44px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-bottom: 16px;
+      }
+      .step-title {
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+      }
+      .step-desc {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--text-secondary);
+        line-height: 1.65;
+      }
+      .step-tag {
+        margin-top: 20px;
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 4px 10px;
+        border-radius: 5px;
+      }
+
+      /* ── FEATURES ── */
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2px;
+        background: var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        margin-top: 8px;
+      }
+      @media (max-width: 680px) {
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .feature-cell {
+        background: var(--white);
+        padding: 36px 32px;
+        transition: background 0.15s;
+      }
+      .feature-cell:hover {
+        background: var(--off-white);
+      }
+      .feature-cell.wide {
+        grid-column: span 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-items: center;
+      }
+      @media (max-width: 680px) {
+        .feature-cell.wide {
+          grid-column: span 1;
+          grid-template-columns: 1fr;
+        }
+      }
+      .feature-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        margin-bottom: 20px;
+      }
+      .feature-title {
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+      }
+      .feature-desc {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--text-secondary);
+        line-height: 1.65;
+      }
+      /* API code snippet */
+      .api-snippet {
+        background: var(--text-primary);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+      .api-snippet-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .api-snippet-dots {
+        display: flex;
+        gap: 6px;
+      }
+      .api-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .api-dot-r {
+        background: #ff5f57;
+      }
+      .api-dot-y {
+        background: #febc2e;
+      }
+      .api-dot-g {
+        background: #28c840;
+      }
+      .api-snippet-label {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .api-snippet-body {
+        padding: 16px;
+        line-height: 1.7;
+      }
+      .api-comment {
+        color: #6e7f8a;
+      }
+      .api-method {
+        color: #7dd3fc;
+      }
+      .api-url {
+        color: #a5f3c0;
+      }
+      .api-key {
+        color: #f9a8d4;
+      }
+      .api-val {
+        color: #fde68a;
+      }
+      .api-bracket {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      /* ── PRIVACY SECTION ── */
+      .privacy-section {
+        background: var(--text-primary);
+        color: var(--white);
+      }
+      .privacy-section .section-label {
+        color: rgba(255, 255, 255, 0.35);
+      }
+      .privacy-section .section-headline {
+        color: var(--white);
+      }
+      .privacy-section .section-sub {
+        color: rgba(255, 255, 255, 0.6);
+      }
+      .privacy-cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 8px;
+      }
+      @media (max-width: 680px) {
+        .privacy-cards {
+          grid-template-columns: 1fr;
+        }
+      }
+      .privacy-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: var(--radius-lg);
+        padding: 32px 28px;
+        transition: background 0.15s;
+      }
+      .privacy-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .privacy-card-icon {
+        font-size: 28px;
+        margin-bottom: 16px;
+        display: block;
+      }
+      .privacy-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin-bottom: 10px;
+        color: rgba(255, 255, 255, 0.95);
+      }
+      .privacy-card-desc {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.5);
+        line-height: 1.65;
+      }
+
+      /* ── FAQ ── */
+      .faq-list {
+        max-width: 720px;
+      }
+      .faq-item {
+        border-bottom: 1px solid var(--border);
+        padding: 24px 0;
+      }
+      .faq-item:first-child {
+        border-top: 1px solid var(--border);
+      }
+      .faq-q {
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        user-select: none;
+      }
+      .faq-q::after {
+        content: "+";
+        font-size: 20px;
+        font-weight: 300;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        transition: transform 0.2s;
+      }
+      .faq-item.open .faq-q::after {
+        transform: rotate(45deg);
+      }
+      .faq-a {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .faq-a code {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        background: var(--surface);
+        padding: 2px 7px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        color: var(--accent);
+      }
+
+      /* ── CTA SECTION ── */
+      .cta-section {
+        background: var(--off-white);
+      }
+      .cta-box {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: 72px 60px;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+        max-width: 680px;
+        margin: 0 auto;
+      }
+      @media (max-width: 680px) {
+        .cta-box {
+          padding: 48px 24px;
+        }
+      }
+      .cta-icon {
+        width: 72px;
+        height: 72px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 28px;
+        overflow: hidden;
+        box-shadow: 0 0 0 6px var(--off-white);
+      }
+      .cta-icon img {
+        width: 52px;
+        height: 52px;
+        object-fit: contain;
+      }
+      .cta-icon-fallback {
+        font-size: 32px;
+      }
+      .cta-headline {
+        font-family: var(--font-serif);
+        font-size: clamp(28px, 4vw, 40px);
+        font-weight: 400;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        margin-bottom: 16px;
+      }
+      .cta-sub {
+        font-size: 15px;
+        font-weight: 300;
+        color: var(--text-secondary);
+        margin-bottom: 36px;
+        line-height: 1.65;
+      }
+      .cta-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .cta-note {
+        margin-top: 20px;
+        font-size: 12px;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        letter-spacing: 0.02em;
+      }
+
+      /* ── FOOTER ── */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 40px;
+      }
+      .footer-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-decoration: none;
+      }
+      .footer-logo {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        overflow: hidden;
+      }
+      .footer-logo img {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
+      }
+      .footer-copy {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .footer-links {
+        display: flex;
+        gap: 24px;
+        list-style: none;
+      }
+      .footer-links a {
+        font-size: 13px;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .footer-links a:hover {
+        color: var(--text-primary);
+      }
+
+      /* ── DIVIDERS ── */
+      .full-divider {
+        width: 100%;
+        height: 1px;
+        background: var(--border);
+      }
+
+      /* ── SCROLL REVEAL ── */
+      .reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s ease;
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: none;
+      }
+      .reveal-delay-1 {
+        transition-delay: 0.1s;
+      }
+      .reveal-delay-2 {
+        transition-delay: 0.2s;
+      }
+      .reveal-delay-3 {
+        transition-delay: 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav>
+      <a href="#" class="nav-brand">
+        <div class="nav-logo">
+          <img
+            src="assets/screendaddy_menubar_icon.png"
+            alt="ScreenDaddy"
+            onerror="
+              this.style.display = 'none';
+              this.nextElementSibling.style.display = 'flex';
+            "
+          />
+          <span class="nav-logo-fallback" style="display: none">👁</span>
+        </div>
+        <span class="nav-wordmark">ScreenDaddy</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#privacy">Privacy</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#download" class="nav-cta">Download free</a></li>
+      </ul>
+    </nav>
+
+    <!-- HERO -->
+    <section style="padding-top: 0; padding-bottom: 0; background: var(--white)">
+      <div class="hero">
+        <div class="hero-text">
+          <div class="hero-eyebrow">macOS Menu Bar App</div>
+          <h1 class="hero-headline">Know <em>exactly</em> how you spend your day</h1>
+          <p class="hero-sub">
+            ScreenDaddy sits quietly in your menu bar, building an honest log of every app, every window, and every
+            moment you go AFK — all rendered locally, all yours.
+          </p>
+          <div class="hero-actions">
+            <a href="#download" class="btn-download">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M8 1v9M8 10l-3-3M8 10l3-3M2 13h12"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Download for Mac
+            </a>
+            <a href="#how-it-works" class="btn-ghost">See how it works →</a>
+          </div>
+          <div class="hero-meta">
+            <span class="hero-meta-item">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2" />
+                <path d="M6 3.5v3l1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+              </svg>
+              Free forever
+            </span>
+            <span class="hero-meta-item">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path
+                  d="M2 6h8M6 2l4 4-4 4"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              macOS 12+
+            </span>
+            <span class="hero-meta-item">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <rect x="2" y="2" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.2" />
+                <path
+                  d="M4.5 6l1.5 1.5 2-2"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              No cloud account
+            </span>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal reveal-delay-2">
+          <div class="hero-screenshot-wrap">
+            <img
+              src="assets/screendaddy_dashboard_preview.png"
+              alt="ScreenDaddy Dashboard"
+              onerror="
+                this.style.display = 'none';
+                this.nextElementSibling.style.display = 'flex';
+              "
+            />
+            <div class="hero-screenshot-placeholder" style="display: none">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" opacity="0.3">
+                <rect x="4" y="8" width="40" height="28" rx="4" stroke="currentColor" stroke-width="2" />
+                <path d="M16 36v4M32 36v4M10 40h28" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M12 20h8M12 26h14M28 20h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+              <span>Dashboard preview</span>
+            </div>
+          </div>
+          <div class="hero-badge reveal reveal-delay-3">
+            <div class="hero-badge-icon">⏱</div>
+            <div>
+              <div class="hero-badge-label">Today's Focus</div>
+              <div class="hero-badge-value">4h 22m</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="full-divider"></div>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-section" id="how-it-works">
+      <div class="section-inner">
+        <p class="section-label reveal">How it works</p>
+        <h2 class="section-headline reveal reveal-delay-1">Up and running<br />in under a minute</h2>
+        <p class="section-sub reveal reveal-delay-2">
+          No configuration required. Install, launch, and ScreenDaddy starts building your activity history immediately.
+        </p>
+
+        <div class="steps reveal reveal-delay-1">
+          <div class="step">
+            <div class="step-num">01</div>
+            <div class="step-icon">📥</div>
+            <div class="step-title">Install the app</div>
+            <p class="step-desc">
+              Download the
+              <code
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 12px;
+                  background: var(--surface);
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                "
+                >.dmg</code
+              >, drag to Applications, and launch. ScreenDaddy appears in your menu bar — no System Preferences maze
+              required.
+            </p>
+            <span class="step-tag">~30 seconds</span>
+          </div>
+          <div class="step">
+            <div class="step-num">02</div>
+            <div class="step-icon">🔐</div>
+            <div class="step-title">Grant Screen Recording</div>
+            <p class="step-desc">
+              macOS will prompt you to allow Screen Recording access once. ScreenDaddy uses it only to read the active
+              window title — it never captures pixels or screenshots.
+            </p>
+            <span class="step-tag">One-time prompt</span>
+          </div>
+          <div class="step">
+            <div class="step-num">03</div>
+            <div class="step-icon">📊</div>
+            <div class="step-title">Open your dashboard</div>
+            <p class="step-desc">
+              Click the menu bar icon and hit "Open Dashboard" — or navigate to
+              <code
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 12px;
+                  background: var(--surface);
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                "
+                >localhost:6769</code
+              >
+              in any browser. Your full activity timeline is right there.
+            </p>
+            <span class="step-tag">Always local</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="full-divider"></div>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <div class="section-inner">
+        <p class="section-label reveal">Features</p>
+        <h2 class="section-headline reveal reveal-delay-1">Everything you need<br />to see where time goes</h2>
+        <p class="section-sub reveal reveal-delay-2">A complete picture of your day, without any of the bloat.</p>
+
+        <div class="features-grid reveal reveal-delay-1">
+          <div class="feature-cell">
+            <div class="feature-icon">⏱</div>
+            <div class="feature-title">Per-app & per-window history</div>
+            <p class="feature-desc">
+              Every focus switch is logged with timestamps, duration, and the exact window title — so you can see not
+              just which app, but what you were working on.
+            </p>
+          </div>
+
+          <div class="feature-cell">
+            <div class="feature-icon">🌙</div>
+            <div class="feature-title">Smart AFK detection</div>
+            <p class="feature-desc">
+              ScreenDaddy detects when you step away and closes the active session automatically. No phantom time added
+              when you grab coffee.
+            </p>
+          </div>
+
+          <div class="feature-cell">
+            <div class="feature-icon">🧠</div>
+            <div class="feature-title">Intentional focus timers</div>
+            <p class="feature-desc">
+              Start a named timer from the menu bar and it overlays your real activity log — giving you both a goal and
+              an honest record of what actually happened.
+            </p>
+          </div>
+
+          <div class="feature-cell">
+            <div class="feature-icon">🔐</div>
+            <div class="feature-title">Daddy password</div>
+            <p class="feature-desc">
+              Set a password to guard quitting the app and changing settings — useful when you want to hold yourself (or
+              a family member) accountable.
+            </p>
+          </div>
+
+          <!-- Wide cell: API -->
+          <div class="feature-cell wide">
+            <div>
+              <div class="feature-icon">🌐</div>
+              <div class="feature-title">Local HTTP API</div>
+              <p class="feature-desc">
+                Query your own data with a simple REST API. Pull events, timers, and top-app stats into your scripts,
+                Obsidian, Raycast, Shortcuts — whatever you build.
+              </p>
+              <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap">
+                <span
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 11px;
+                    background: var(--accent-subtle);
+                    color: var(--accent);
+                    border: 1px solid var(--accent-subtle-border);
+                    padding: 4px 10px;
+                    border-radius: 5px;
+                  "
+                  >/api/events</span
+                >
+                <span
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 11px;
+                    background: var(--accent-subtle);
+                    color: var(--accent);
+                    border: 1px solid var(--accent-subtle-border);
+                    padding: 4px 10px;
+                    border-radius: 5px;
+                  "
+                  >/api/timers</span
+                >
+                <span
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 11px;
+                    background: var(--accent-subtle);
+                    color: var(--accent);
+                    border: 1px solid var(--accent-subtle-border);
+                    padding: 4px 10px;
+                    border-radius: 5px;
+                  "
+                  >/api/topApps</span
+                >
+              </div>
+            </div>
+            <div class="api-snippet">
+              <div class="api-snippet-header">
+                <div class="api-snippet-dots">
+                  <span class="api-dot api-dot-r"></span>
+                  <span class="api-dot api-dot-y"></span>
+                  <span class="api-dot api-dot-g"></span>
+                </div>
+                <span class="api-snippet-label">GET /api/topApps</span>
+              </div>
+              <div class="api-snippet-body" style="color: rgba(255, 255, 255, 0.85)">
+                <div><span class="api-bracket">[</span></div>
+                <div>&nbsp;&nbsp;<span class="api-bracket">{</span></div>
+                <div>
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span class="api-key">"app"</span><span>: </span
+                  ><span class="api-val">"Xcode"</span><span class="api-bracket">,</span>
+                </div>
+                <div>
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span class="api-key">"totalSeconds"</span><span>: </span
+                  ><span class="api-val">9840</span><span class="api-bracket">,</span>
+                </div>
+                <div>
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span class="api-key">"sessions"</span><span>: </span
+                  ><span class="api-val">14</span>
+                </div>
+                <div>&nbsp;&nbsp;<span class="api-bracket">},</span></div>
+                <div>&nbsp;&nbsp;<span class="api-comment">// …more apps</span></div>
+                <div><span class="api-bracket">]</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="full-divider"></div>
+
+    <!-- PRIVACY -->
+    <section class="privacy-section" id="privacy">
+      <div class="section-inner">
+        <p class="section-label reveal">Privacy</p>
+        <h2 class="section-headline reveal reveal-delay-1">Your data lives on<br />your machine. Full stop.</h2>
+        <p class="section-sub reveal reveal-delay-2">
+          There is no server, no analytics SDK, no account, no telemetry. ScreenDaddy was built with the assumption that
+          your screen time data is sensitive — because it is.
+        </p>
+
+        <div class="privacy-cards reveal reveal-delay-1">
+          <div class="privacy-card">
+            <span class="privacy-card-icon">🏠</span>
+            <div class="privacy-card-title">100% local storage</div>
+            <p class="privacy-card-desc">
+              All events are written to a local SQLite database on your Mac. Nothing leaves your machine unless you
+              explicitly export it.
+            </p>
+          </div>
+          <div class="privacy-card">
+            <span class="privacy-card-icon">🚫</span>
+            <div class="privacy-card-title">No cloud, no account</div>
+            <p class="privacy-card-desc">
+              There is no sign-up, no sync service, no third-party SDK. ScreenDaddy has no internet dependency
+              whatsoever.
+            </p>
+          </div>
+          <div class="privacy-card">
+            <span class="privacy-card-icon">👁</span>
+            <div class="privacy-card-title">Window titles only</div>
+            <p class="privacy-card-desc">
+              The Screen Recording permission is used only to read active window titles. ScreenDaddy never captures
+              pixels, never takes screenshots.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="full-divider" style="background: rgba(255, 255, 255, 0.08)"></div>
+
+    <!-- FAQ -->
+    <section id="faq">
+      <div class="section-inner">
+        <p class="section-label reveal">FAQ</p>
+        <h2 class="section-headline reveal reveal-delay-1">Common questions</h2>
+
+        <div class="faq-list reveal reveal-delay-1">
+          <div class="faq-item">
+            <div class="faq-q">Does ScreenDaddy take screenshots?</div>
+            <div class="faq-a">
+              <p>
+                No. ScreenDaddy uses the Screen Recording permission only to read the title of the active window (e.g.
+                "index.js — VS Code"). It never captures your screen, your pixels, or any visual content.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Where is my data stored?</div>
+            <div class="faq-a">
+              <p>
+                Locally, in a SQLite database in your Application Support folder. You can find it at
+                <code>~/Library/Application Support/ScreenDaddy/</code>. Nothing is sent to any server.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">What does the dashboard URL look like?</div>
+            <div class="faq-a">
+              <p>
+                ScreenDaddy serves its dashboard at <code>http://localhost:6769</code>. Open it in any browser, or click
+                "Open Dashboard" from the menu bar icon. It only works when ScreenDaddy is running.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">What macOS versions are supported?</div>
+            <div class="faq-a">
+              <p>ScreenDaddy requires macOS 12 Monterey or later, on both Apple Silicon and Intel Macs.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">What is the "Daddy password" for?</div>
+            <div class="faq-a">
+              <p>
+                It's an optional password that locks the ability to quit the app or change settings. It's useful if you
+                want to hold yourself accountable, or if you're setting up ScreenDaddy for a family member and want to
+                prevent easy circumvention.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Can I use the API with my own scripts?</div>
+            <div class="faq-a">
+              <p>
+                Yes. ScreenDaddy exposes a local REST API at <code>http://localhost:6769/api/</code>. Endpoints include
+                <code>/api/events</code>, <code>/api/timers</code>, and <code>/api/topApps</code>. You can query them
+                from any script, Shortcuts workflow, or tool that can make HTTP requests.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="full-divider"></div>
+
+    <!-- CTA -->
+    <section class="cta-section" id="download">
+      <div class="section-inner">
+        <div class="cta-box reveal">
+          <div class="cta-icon">
+            <img
+              src="assets/screendaddy_menubar_icon.png"
+              alt="ScreenDaddy"
+              onerror="
+                this.style.display = 'none';
+                this.nextElementSibling.style.display = 'block';
+              "
+            />
+            <span class="cta-icon-fallback" style="display: none">👁</span>
+          </div>
+          <h2 class="cta-headline">Start knowing how<br />you spend your time</h2>
+          <p class="cta-sub">
+            Free, local, and honest. No account, no subscription, no cloud. Just a clear picture of your day.
+          </p>
+          <div class="cta-actions">
+            <a href="#" class="btn-download">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M8 1v9M8 10l-3-3M8 10l3-3M2 13h12"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Download for Mac — Free
+            </a>
+            <a href="#" class="btn-ghost">View on GitHub</a>
+          </div>
+          <p class="cta-note">macOS 12+ · Apple Silicon &amp; Intel · ~8 MB</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-inner">
+        <a href="#" class="footer-brand">
+          <div class="footer-logo">
+            <img
+              src="assets/screendaddy_menubar_icon.png"
+              alt=""
+              onerror="
+                this.style.display = 'none';
+                this.parentElement.innerHTML = '👁';
+              "
+            />
+          </div>
+          ScreenDaddy
+        </a>
+        <span class="footer-copy">© 2025 ScreenDaddy · Made for Mac</span>
+        <ul class="footer-links">
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+
+    <script>
+      // FAQ accordion
+      document.querySelectorAll(".faq-q").forEach((q) => {
+        q.addEventListener("click", () => {
+          const item = q.closest(".faq-item");
+          const answer = item.querySelector(".faq-a");
+          const isOpen = item.classList.contains("open");
+          // Close all
+          document.querySelectorAll(".faq-item").forEach((i) => {
+            i.classList.remove("open");
+            i.querySelector(".faq-a").style.maxHeight = "0";
+          });
+          // Open clicked if it was closed
+          if (!isOpen) {
+            item.classList.add("open");
+            answer.style.maxHeight = answer.scrollHeight + "px";
+          }
+        });
+      });
+
+      // Scroll reveal
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+      );
+
+      document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+
+      // Trigger hero elements immediately
+      document.querySelectorAll(".hero .reveal").forEach((el) => {
+        el.classList.add("visible");
+      });
+    </script>
+  </body>
+</html>
